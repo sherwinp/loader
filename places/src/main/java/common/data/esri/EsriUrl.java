@@ -63,7 +63,7 @@ public final class EsriUrl {
 			if( jsonToken == JsonToken.END_OBJECT ){
 		    	// LOGGER.info(objValues.toString());
 		    	if( objValues.get("CITY_NAME") instanceof String ){
-		    		cities.add(new City(objValues.get("CITY_NAME"), objValues.get("ADMIN_NAME"), objValues.get("CNTRY_NAME"), objValues.get("FIPS_CNTRY")));
+		    		cities.add(new City(objValues.get("CITY_NAME"), objValues.get("ADMIN_NAME"), objValues.get("GMI_ADMIN"), objValues.get("CNTRY_NAME"), objValues.get("FIPS_CNTRY")));
 		    	}
 		    	objValues.clear();
 		    }

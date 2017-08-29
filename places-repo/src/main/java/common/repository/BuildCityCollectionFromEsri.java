@@ -2,6 +2,7 @@ package common.repository;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
@@ -33,11 +34,13 @@ public class BuildCityCollectionFromEsri implements CommandMarker{
 	public static void main(@CliOption(key="args", mandatory=false) String[] args) throws Exception {
 
 		List<City> cities = EsriUrl.accessorForCities(0);
-		cities.forEach((city)->{
-			LOGGER.info(city.toString());
-		});
 		
-		//RepositoryOfCity.load(cities);
+			try {
+				RepositoryOfCity.load(cities);
+			} catch (IOException e) {
+				e.printStackTrace();				
+			}
+		
 
 	}
 }

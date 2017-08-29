@@ -22,8 +22,9 @@ public class State implements Serializable {
     @Id
     @SequenceGenerator(name = "STATE_ID_GENERATOR")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "STATE_ID_GENERATOR")
+    @Column(name = "STATE_ID")
     private long id;
-
+    
     @Column(name = "STATE_CODE")
     private String stateCode;
 
