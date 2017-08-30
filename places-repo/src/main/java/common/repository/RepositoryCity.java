@@ -6,8 +6,11 @@ import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.TypedQuery;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.stereotype.Repository;
 
 import common.data.Utility;
@@ -22,19 +25,63 @@ public interface RepositoryCity extends JpaRepository<City, String> {
 
 class RepositoryOfCity{
 	private final static Logger LOGGER = Logger.getLogger(RepositoryOfCity.class.getName());
+
 	static void load(List<City> collection) throws IOException{
-		EntityManagerFactory emf = Utility.Initialize();
-		EntityManager em = emf.createEntityManager();
+	EntityManagerFactory emf = Utility.Initialize();
+	EntityManager em = emf.createEntityManager();
+	TypedQuery<State> stateQuery = em.createQuery("SELECT s FROM State s WHERE stateName like ?1", State.class);
+	TypedQuery<Country> countryQuery = em.createQuery("SELECT c FROM Country c WHERE countryName like ?1", Country.class);
+	TypedQuery<City> cityQuery = em.createQuery("SELECT cty FROM City cty WHERE cityName like ?1", City.class);
 	
-	em.getTransaction().begin();
-	for( City city: collection ){
+	for( City aCity: collection ){
 		try{
-			if(city.valid()){
+			if(aCity.valid()){
 				
-				State state = em.find(State.class, city.getState_name());
-				Country country = em.find(Country.class, city.getCountry_name());
+				Country country = null;
+				State state = null;
+				em.getTransaction().begin();
 				
-				em.merge(new City(city.getCity_name(), state.getId(), country.getId()));
+				countryQuery.setParameter(1, aCity.getCountryName());
+				List<Country> countryList = countryQuery.getResultList(); 
+				if( countryList.size() > 1 )
+					throw( new IllegalStateException("Country Mismatch, more than one.") );
+
+				if( countryList.isEmpty())
+					country = em.merge(new Country(aCity.getCountryName()));
+				else
+					country = countryList.get(0);
+				
+				stateQuery.setParameter(1, aCity.getStateName());
+				List<State> stateList = stateQuery.getResultList();
+				if( stateList.size() > 1 )
+					throw( new IllegalStateException("State Mismatch, more than one.") );
+
+				if( stateList.isEmpty() ) {
+					state = em.merge(new State(aCity.getStateName(), country));
+				}else {
+					state = stateList.get(0);				
+				}
+				LOGGER.info("Loading City: " + aCity.toString());			
+
+//				cityQuery.setParameter(1, aCity.getCityName());
+//				List<City> cityList = cityQuery.getResultList();
+//				if( cityList.size() > 0 ) {
+//					/// already in database possibly different state.
+//					em.getTransaction().rollback();
+//					continue;
+//				}
+				
+				aCity.setCountry(country);
+				aCity.setState(state);
+				
+				em.merge(new City(aCity.getCityName(), state.getId(), country.getId()));
+				
+				try {
+					em.getTransaction().commit();
+				}catch(Exception e) {
+					LOGGER.info(e.getMessage());
+					em.getTransaction().rollback();
+				}
 				
 			}
 		}catch(Exception exception){
@@ -42,7 +89,6 @@ class RepositoryOfCity{
 			break;
 		}
 	}
-	em.getTransaction().commit();
 	em.close();
 	emf.close();
 	}

@@ -37,7 +37,9 @@ public class Country implements Serializable {
 
     public Country() {
     }
-
+    public Country(String name) {
+    	countryName = name;
+    }
     public long getId() {
         return this.id;
     }

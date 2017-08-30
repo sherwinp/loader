@@ -1,19 +1,25 @@
 package common.data.esri;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.net.ssl.HttpsURLConnection;
-
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 
 import common.data.City;
 
@@ -23,22 +29,53 @@ public final class EsriUrl {
 	
 	public static List<City> accessorForCities(int offset) throws IOException {
 		String requestUrl = String.format("%s&resultOffset=%d&resultRecordCount=1900", esriUrl, offset);
-		HttpsURLConnection con = (HttpsURLConnection) new URL(requestUrl).openConnection();
+		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy.", 80));
+		HttpURLConnection con =(HttpURLConnection)new URL(requestUrl).openConnection(proxy);
 		List<City> cities = new ArrayList<City>();
-			
-		while (moreData(new ObjectMapper().getFactory().createParser(con.getInputStream()), cities)){
+		con.setRequestMethod("GET");
+		con.setRequestProperty("Accept", "application/json");
+		
+		if(con.usingProxy())
+			LOGGER.info( "Using Proxy: "  );
+
+		while (moreData( Json.createReader(new InputStreamReader(con.getInputStream(), Charset.defaultCharset())).read(), cities)){
 			offset = offset + cities.size();
 			requestUrl = String.format("%s&resultOffset=%d&resultRecordCount=1900", esriUrl, offset);
-			con = (HttpsURLConnection) new URL(requestUrl).openConnection();
+			con = (HttpURLConnection)new URL(requestUrl).openConnection(proxy);
 			con.setRequestMethod("GET");
 		}
 		return cities;
 	}
-	public static boolean moreData(JsonParser jsonParser, List<City> cities) throws IOException{
+
+	public static boolean moreData(javax.json.JsonStructure structure, List<City> cities) throws IOException{
 		Boolean exceededTransferLimit = false;
-		Map<String, String> objValues = new HashMap<String, String>();
 		
-		while(!jsonParser.isClosed()){
+		int features_size = structure.asJsonObject().getJsonArray("features").size();
+		
+		for( JsonValue obj : structure.asJsonObject().getJsonArray("features")) {
+			javax.json.JsonObject fields = obj.asJsonObject().get("attributes").asJsonObject();
+			int size = fields.size();
+			fields.getJsonString("CITY_NAME");
+			String field = fields.getJsonString("CITY_NAME").getString();
+			LOGGER.info(field);
+	    	if( !field.isEmpty() ){
+	    		cities.add(new City( field, 
+	    					fields.getJsonString("ADMIN_NAME").getString(), 
+	    					fields.getJsonString("GMI_ADMIN").getString(), 
+	    					fields.getJsonString("CNTRY_NAME").getString(), 
+	    					fields.getJsonString("FIPS_CNTRY").getString()));
+	    	}
+		}
+		if( features_size > 0 && null!=structure.asJsonObject().get("exceededTransferLimit") )
+			exceededTransferLimit = structure.asJsonObject().getBoolean("exceededTransferLimit");
+		
+		return exceededTransferLimit;
+
+	}
+	
+	/// ----
+	/*
+	 * while(!jsonParser.isClosed()){
 		    
 			JsonToken jsonToken = jsonParser.nextToken();
 			
@@ -66,8 +103,8 @@ public final class EsriUrl {
 		    		cities.add(new City(objValues.get("CITY_NAME"), objValues.get("ADMIN_NAME"), objValues.get("GMI_ADMIN"), objValues.get("CNTRY_NAME"), objValues.get("FIPS_CNTRY")));
 		    	}
 		    	objValues.clear();
+		    	break;
 		    }
 		}
-		return exceededTransferLimit;
-	}
+	 * */
 }

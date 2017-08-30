@@ -38,7 +38,10 @@ public class State implements Serializable {
 
     public State() {
     }
-
+    public State(String name, Country country) {
+    	stateName = name;
+    	this.country = country;
+    }
     public long getId() {
         return this.id;
     }
