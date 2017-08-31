@@ -19,16 +19,16 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name = "CITY", schema="PUBLIC", uniqueConstraints= {@UniqueConstraint(name="CITY_X1", columnNames={"CITY_NM", "ST_ID"})})
+@Table(name = "CITY", schema="CTPAT2", uniqueConstraints= {@UniqueConstraint(name="CITY_X1", columnNames={"CITY_NM", "ST_ID"})})
 public class City implements Serializable {
 	
 	@Id
-    @SequenceGenerator(name = "CITY_ID_GENERATOR")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CITY_ID_GENERATOR")
+////    @SequenceGenerator(name = "CITY_ID_GENERATOR")
+////    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CITY_ID_GENERATOR")
 	@Column(name="CITY_ID", table="CITY", insertable=true, updatable=false)
 	Long city_id;
 	
-	@Column(name="ACTV_CD", table="CITY", insertable=false, updatable=true, nullable=false, columnDefinition="VARCHAR(1) DEFAULT 'A'")
+	@Column(name="ACTV_CD", table="CITY", insertable=false, updatable=true, nullable=false, columnDefinition="CHAR(1) DEFAULT 'A'")
 	String activeCode;
 	
 	@Column(name="CITY_NM", table="CITY", insertable=true, updatable=false,  length=64)
@@ -78,6 +78,9 @@ public class City implements Serializable {
 	}
 	public Long getId() {
 		return city_id;
+	}
+	public void setId(Long _id) {
+		city_id = _id;
 	}
 	public String getCountryName() {
 		return countryName;

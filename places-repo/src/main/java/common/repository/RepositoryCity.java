@@ -31,8 +31,8 @@ class RepositoryOfCity{
 	EntityManager em = emf.createEntityManager();
 	TypedQuery<State> stateQuery = em.createQuery("SELECT s FROM State s WHERE stateName like ?1", State.class);
 	TypedQuery<Country> countryQuery = em.createQuery("SELECT c FROM Country c WHERE countryName like ?1", Country.class);
-	TypedQuery<City> cityQuery = em.createQuery("SELECT cty FROM City cty WHERE cityName like ?1", City.class);
-	
+	TypedQuery<City> cityQuery = em.createQuery("SELECT cty FROM City cty WHERE cityName like ?1 AND state_id=?2", City.class);
+	Long idCounter = 1L;
 	for( City aCity: collection ){
 		try{
 			if(aCity.valid()){
@@ -41,15 +41,20 @@ class RepositoryOfCity{
 				State state = null;
 				em.getTransaction().begin();
 				
+				LOGGER.info("Loading City: " + aCity.toString());
+				
 				countryQuery.setParameter(1, aCity.getCountryName());
 				List<Country> countryList = countryQuery.getResultList(); 
 				if( countryList.size() > 1 )
 					throw( new IllegalStateException("Country Mismatch, more than one.") );
 
-				if( countryList.isEmpty())
-					country = em.merge(new Country(aCity.getCountryName()));
-				else
+				if( countryList.isEmpty()) {
+					em.getTransaction().rollback();
+					continue;
+					//country = em.merge(new Country(aCity.getCountryName()));
+				} else {
 					country = countryList.get(0);
+				}
 				
 				stateQuery.setParameter(1, aCity.getStateName());
 				List<State> stateList = stateQuery.getResultList();
@@ -57,24 +62,27 @@ class RepositoryOfCity{
 					throw( new IllegalStateException("State Mismatch, more than one.") );
 
 				if( stateList.isEmpty() ) {
-					state = em.merge(new State(aCity.getStateName(), country));
-				}else {
+					em.getTransaction().rollback();
+					continue;
+					//state = em.merge(new State(aCity.getStateName(), country));
+				} else {
 					state = stateList.get(0);				
 				}
-				LOGGER.info("Loading City: " + aCity.toString());			
 
-//				cityQuery.setParameter(1, aCity.getCityName());
-//				List<City> cityList = cityQuery.getResultList();
-//				if( cityList.size() > 0 ) {
-//					/// already in database possibly different state.
-//					em.getTransaction().rollback();
-//					continue;
-//				}
+				cityQuery.setParameter(1, aCity.getCityName());
+				cityQuery.setParameter(2, state.getId());
+				List<City> cityList = cityQuery.getResultList();
+				if( cityList.size() > 0 ) {
+					/// already in database possibly different state.
+					em.getTransaction().rollback();
+					continue;
+				}
 				
 				aCity.setCountry(country);
 				aCity.setState(state);
-				
-				em.merge(new City(aCity.getCityName(), state.getId(), country.getId()));
+				City newCity = new City(aCity.getCityName(), state.getId(), country.getId());
+				newCity.setId(++idCounter);
+				em.merge(newCity);
 				
 				try {
 					em.getTransaction().commit();

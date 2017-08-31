@@ -11,7 +11,7 @@ import java.util.List;
  *
  */
 @Entity
-@Table(name = "STATE", schema="PUBLIC")
+@Table(name = "STATE", schema="CTPAT2")
 public class State implements Serializable {
 
     /**
@@ -22,7 +22,7 @@ public class State implements Serializable {
     @Id
     @SequenceGenerator(name = "STATE_ID_GENERATOR")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "STATE_ID_GENERATOR")
-    @Column(name = "STATE_ID")
+    @Column(name = "ID")
     private long id;
     
     @Column(name = "STATE_CODE")

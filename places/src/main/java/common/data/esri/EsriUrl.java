@@ -29,7 +29,7 @@ public final class EsriUrl {
 	
 	public static List<City> accessorForCities(int offset) throws IOException {
 		String requestUrl = String.format("%s&resultOffset=%d&resultRecordCount=1900", esriUrl, offset);
-		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy.", 80));
+		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy.apps.dhs.gov", 80));
 		HttpURLConnection con =(HttpURLConnection)new URL(requestUrl).openConnection(proxy);
 		List<City> cities = new ArrayList<City>();
 		con.setRequestMethod("GET");

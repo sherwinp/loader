@@ -11,7 +11,7 @@ import java.util.List;
  *
  */
 @Entity
-@Table(name = "COUNTRY", schema="PUBLIC")
+@Table(name = "COUNTRY", schema="CTPAT2")
 public class Country implements Serializable {
 
     /**
@@ -22,7 +22,7 @@ public class Country implements Serializable {
     @Id
     @SequenceGenerator(name = "COUNTRY_ID_GENERATOR")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "COUNTRY_ID_GENERATOR")
-    @Column(name = "COUNTRY_ID")
+    @Column(name = "ID")
     private long id;
 
     @Column(name = "COUNTRY_CODE")
