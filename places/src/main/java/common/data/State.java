@@ -4,6 +4,8 @@ import common.data.Country;
 
 import java.io.Serializable;
 import javax.persistence.*;
+
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -20,26 +22,38 @@ public class State implements Serializable {
     private static final long serialVersionUID = 4394851791620990450L;
 
     @Id
-    @SequenceGenerator(name = "STATE_ID_GENERATOR")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "STATE_ID_GENERATOR")
-    @Column(name = "ID")
+    @Column(name = "ID", table="STATE", insertable=true, updatable=false)
     private long id;
     
-    @Column(name = "STATE_CODE")
+    @Column(name = "STATE_CODE", table="STATE", insertable=true, updatable=false, length=3)
     private String stateCode;
+    
+    @Column(name = "CTRY_SBDVSN_CD", table="STATE", insertable=true, updatable=true, length=3)
+    private String subDivisionCode;
+    
 
-    @Column(name = "STATE_NAME")
+    @Column(name = "STATE_NAME", table="STATE", insertable=true, updatable=false)
     private String stateName;
 
     //bi-directional many-to-one association to CountryList
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "COUNTRY_ID")
+    @JoinColumn(name = "COUNTRY_ID", table="STATE", insertable=true, updatable=false)
     private Country country;
 
+	@Column(name="ETL_DTTM", table="STATE", insertable=true, updatable=true, columnDefinition="DATE DEFAULT CURRENT_TIMESTAMP")
+	@Temporal(TemporalType.TIMESTAMP)
+	Calendar etl_dttm;
+	
     public State() {
     }
     public State(String name, Country country) {
     	stateName = name;
+    	this.country = country;
+    }
+    public State(String name, String code, Country country) {
+    	stateName = name;
+    	stateCode = code;
+    	this.subDivisionCode = stateCode;
     	this.country = country;
     }
     public long getId() {
@@ -56,6 +70,7 @@ public class State implements Serializable {
 
     public void setStateCode(String stateCode) {
         this.stateCode = stateCode;
+        this.subDivisionCode = this.stateCode;
     }
 
     public String getStateName() {

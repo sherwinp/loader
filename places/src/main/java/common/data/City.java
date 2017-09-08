@@ -28,7 +28,7 @@ public class City implements Serializable {
 	@Column(name="CITY_ID", table="CITY", insertable=true, updatable=false)
 	Long city_id;
 	
-	@Column(name="ACTV_CD", table="CITY", insertable=false, updatable=true, nullable=false, columnDefinition="CHAR(1) DEFAULT 'A'")
+	@Column(name="ACTV_CD", table="CITY", insertable=true, updatable=true, nullable=false, columnDefinition="CHAR(1) DEFAULT 'A'")
 	String activeCode;
 	
 	@Column(name="CITY_NM", table="CITY", insertable=true, updatable=false,  length=64)
@@ -40,10 +40,12 @@ public class City implements Serializable {
 	@Column(name="CTRY_ID", table="CITY", insertable=true, updatable=false)
 	Long country_id;
 
-	@Column(name="ETL_DTTM", table="CITY", insertable=false, updatable=true, nullable=false, columnDefinition="DATE DEFAULT CURRENT_TIMESTAMP")
+	@Column(name="ETL_DTTM", table="CITY", insertable=true, updatable=true, nullable=false, columnDefinition="DATE DEFAULT CURRENT_TIMESTAMP")
 	@Temporal(TemporalType.TIMESTAMP)
 	Calendar etl_dttm;
-	
+
+	@Transient
+	String stateCode;
 	@Transient
 	String stateName;
 	@Transient
@@ -51,24 +53,35 @@ public class City implements Serializable {
 	
 	private static final long serialVersionUID = -5462509156866391317L;
 	
-	public City(){}
+	public City()
+	{
+		activeCode = "A";
+		etl_dttm = Calendar.getInstance();
+	}
 	
 	public City(String name, Long state_id, Long country_id){
+		activeCode = "A";
 		this.state_id=state_id;
 		this.country_id = country_id;
 		cityName = name;
+		etl_dttm = Calendar.getInstance();
 	}
 	public City(HashMap metadata, List<String> values){
+		activeCode = "A";
 		cityName = ns(values.get( (Integer) metadata.get("city_name") -1));
 		countryName = ns(values.get( (Integer) metadata.get("country_name") -1));
 		//ns(values.get( (Integer) metadata.get("country_iso_code") -1));
 		stateName = ns(values.get( (Integer) metadata.get("subdivision_1_name") -1));
-		//ns(values.get( (Integer) metadata.get("subdivision_1_iso_code") -1));
+		stateCode = ns(values.get( (Integer) metadata.get("subdivision_1_iso_code") -1));
+		etl_dttm = Calendar.getInstance();
 	}
 	public City(String city_name, String state_name, String state_code, String country_name, String country_iso_code) {
+		activeCode = "A";
 		this.cityName = city_name;
 		this.stateName = state_name;
+		this.stateCode = state_code;
 		this.countryName = country_name;
+		etl_dttm = Calendar.getInstance();
 	}
 	String ns(Object value){
 		return String.format("%s", value);
@@ -87,6 +100,10 @@ public class City implements Serializable {
 	}
 	public void setCountryName(String country_name) {
 		this.countryName = country_name;
+	}
+	
+	public String getStateCode() {
+		return stateCode;
 	}
 
 	public String getStateName() {

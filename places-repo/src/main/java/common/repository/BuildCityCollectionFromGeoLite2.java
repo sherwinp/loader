@@ -2,6 +2,7 @@ package common.repository;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
@@ -52,6 +53,10 @@ public class BuildCityCollectionFromGeoLite2 implements CommandMarker{
 
 		fis.close();
 		freader.close();
-		RepositoryOfCity.load(collection);
+		try {
+			RepositoryOfCity.load(collection);
+		} catch (IOException e) {
+			e.printStackTrace();				
+		}
 	}
 }

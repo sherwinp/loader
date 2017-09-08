@@ -72,39 +72,4 @@ public final class EsriUrl {
 		return exceededTransferLimit;
 
 	}
-	
-	/// ----
-	/*
-	 * while(!jsonParser.isClosed()){
-		    
-			JsonToken jsonToken = jsonParser.nextToken();
-			
-			if(jsonToken == JsonToken.VALUE_TRUE && (jsonParser.getCurrentName() == "exceededTransferLimit")){
-				exceededTransferLimit = jsonParser.getValueAsBoolean();
-			}
-			
-			if (jsonToken == JsonToken.VALUE_STRING){
-				switch(jsonParser.getCurrentName()){
-				case "STATUS":
-				case "ADMIN_NAME":
-				case "CITY_NAME":
-				case "CNTRY_NAME":
-				case "FIPS_CNTRY":
-				case "GMI_ADMIN":
-				case "POP_CLASS":
-				default:
-					objValues.put( jsonParser.getCurrentName(),  jsonParser.getValueAsString() );
-					
-				}
-			}
-			if( jsonToken == JsonToken.END_OBJECT ){
-		    	// LOGGER.info(objValues.toString());
-		    	if( objValues.get("CITY_NAME") instanceof String ){
-		    		cities.add(new City(objValues.get("CITY_NAME"), objValues.get("ADMIN_NAME"), objValues.get("GMI_ADMIN"), objValues.get("CNTRY_NAME"), objValues.get("FIPS_CNTRY")));
-		    	}
-		    	objValues.clear();
-		    	break;
-		    }
-		}
-	 * */
 }
